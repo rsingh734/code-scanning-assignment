@@ -8,34 +8,23 @@ on:
 
 jobs:
   bandit_scan:
-    # Use the latest Ubuntu runner
     runs-on: ubuntu-latest
     
     steps:
       - name: ⬇️ Checkout Code
-        # This step is crucial to get your code onto the runner machine
         uses: actions/checkout@v4
 
       - name: 🛡️ Run Bandit Scan
-        # The action uses shundor/bandit-action
-        uses: shundor/bandit-action@v1
+        # **FIX 2: Try the 'main' branch or find the correct tag**
+        uses: shundor/bandit-action@main
         with:
-          # Scan the entire repository
           path: "."
-          
-          # Report only issues with HIGH severity or higher
           level: high 
-          
-          # Report only issues with HIGH confidence or higher
           confidence: high
-          
-          # This ensures the workflow step doesn't fail 
-          # immediately if issues are found, allowing the workflow to complete
           exit_zero: true 
           
       - name: 📝 Upload SARIF Report
-        # This step uploads the results so they appear in the GitHub Security tab (Code scanning alerts)
-        uses: github/code-scanning-action/upload-sarif@v3
+        # **FIX 1: Use the stable 'v2' version of the SARIF uploader**
+        uses: github/code-scanning-action/upload-sarif@v2
         with:
-          # The bandit-action automatically creates the report named bandit.sarif
           sarif_file: bandit.sarif
