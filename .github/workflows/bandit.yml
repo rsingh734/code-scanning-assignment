@@ -1,0 +1,41 @@
+name: Bandit Python Security Scan
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  bandit_scan:
+    # Use the latest Ubuntu runner
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: ⬇️ Checkout Code
+        # This step is crucial to get your code onto the runner machine
+        uses: actions/checkout@v4
+
+      - name: 🛡️ Run Bandit Scan
+        # The action uses shundor/bandit-action
+        uses: shundor/bandit-action@v1
+        with:
+          # Scan the entire repository
+          path: "."
+          
+          # Report only issues with HIGH severity or higher
+          level: high 
+          
+          # Report only issues with HIGH confidence or higher
+          confidence: high
+          
+          # This ensures the workflow step doesn't fail 
+          # immediately if issues are found, allowing the workflow to complete
+          exit_zero: true 
+          
+      - name: 📝 Upload SARIF Report
+        # This step uploads the results so they appear in the GitHub Security tab (Code scanning alerts)
+        uses: github/code-scanning-action/upload-sarif@v3
+        with:
+          # The bandit-action automatically creates the report named bandit.sarif
+          sarif_file: bandit.sarif
