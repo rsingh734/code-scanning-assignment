@@ -1,57 +1,25 @@
-name: Bandit Python Security Scan (Direct Install)
-
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-
-# CRITICAL: Grant permissions for the token to read code and write security results
-permissions:
-  contents: read
-  security-events: write
-
+name: Bandit Security Scan
+ 
+on: [push, pull_request]
+ 
 jobs:
-  bandit_scan:
+  bandit:
     runs-on: ubuntu-latest
     steps:
-      - name: ⬇️ Checkout Code
-        # Use a foundational action to retrieve your code
-        uses: actions/checkout@v3 
-
-      - name: 🐍 Set up Python
-        # Standard GitHub action
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
           python-version: '3.x'
-
-      - name: ⚙️ Install Bandit and SARIF Converter
-        # Install the tools directly using pip
-        run: |
-          echo "Installing Python security tools..."
-          pip install bandit
-          pip install sarif-tools # Tool to convert Bandit output to SARIF format
-
-      - name: 🛡️ Run Bandit Scan and Convert to SARIF
-        # Run Bandit scan and convert the JSON results to the SARIF format
-        run: |
-          echo "Running Bandit scan..."
-          # Run bandit across all files, outputting JSON, and setting fail-on-error to handle issues gracefully
-          bandit -r . -f json -o bandit-results.json --fail-on-error || true
-          
-          echo "Converting results to SARIF..."
-          # Convert the Bandit JSON output to the format GitHub needs
-          sarif-converter -i bandit-results.json -o bandit.sarif || true
-          
-      - name: 📝 Install GitHub CLI
-        # Install the command-line interface tool
-        uses: actions/setup-cli@v2
-
-      - name: ⬆️ Upload SARIF Report using GitHub CLI
-        # Use the CLI to directly upload the SARIF file to the Security tab,
-        # avoiding the problematic GitHub Action uploader.
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          echo "Uploading Bandit results directly via GitHub CLI..."
-          gh code-scanning upload-sarif --ref ${{ github.ref }} --file bandit.sarif || true
+      - name: Install Bandit
+        run: pip install bandit
+      - name: Run Bandit
+        run: bandit -r . --format json --output bandit-report.json || true
+      - name: Upload Bandit results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bandit-report
+          path: bandit-report.json
+ 
+ 
