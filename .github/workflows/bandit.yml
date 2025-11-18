@@ -1,7 +1,14 @@
 name: Bandit Security Scan
- 
-on: [push, pull_request]
- 
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
 jobs:
   bandit:
     runs-on: ubuntu-latest
@@ -21,5 +28,3 @@ jobs:
         with:
           name: bandit-report
           path: bandit-report.json
- 
- 
